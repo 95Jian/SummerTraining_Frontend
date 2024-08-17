@@ -36,9 +36,11 @@
           password: this.password,
         }).then(response => {
           if (response.data.success) {
-            this.message = '注册成功！即将返回登录页面';setTimeout(() => {
-            this.$emit('close'); // Close the dialog after 1.5 seconds
-            }, 1500);
+            this.message = '注册成功！';
+            this.$emit('close');
+            setTimeout(() => {
+            alert(this.message)
+            }, 100);
           } else {
             this.message = `${response.data.message}`;
           }

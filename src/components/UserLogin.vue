@@ -3,7 +3,7 @@
       <div class="login-box">
         <h2>Login</h2>
         <div>
-          <input v-model="username" type="text" placeholder="Username" />
+          <input v-model="user_name" type="text" placeholder="Username" />
         </div>
         <div>
           <input v-model="password" type="password" placeholder="Password" />
@@ -28,22 +28,23 @@
     components: { RegisterDialog },
     data() {
       return {
-        username: '',
+        user_name: '',
         password: '',
         message: '',
         showRegisterDialog: false,
+        URL:'http://localhost:8080',
       };
     },
     methods: {
       login() {
-        axios.post('/api/login', {
-          username: this.username,
+        axios.post(`${this.URL}/user/login`, {
+          user_name: this.user_name,
           password: this.password,
         }).then(response => {
           if (response.data.success) {
-            this.message = 'Login successful!';
+            this.message = '登录成功!';
           } else {
-            this.message = `Login failed: ${response.data.message}`;
+            this.message = `登录失败: ${response.data.message}`;
           }
         }).catch(error => {
           this.message = `Error: ${error.response.data.message || error.message}`;
