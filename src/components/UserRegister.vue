@@ -39,7 +39,7 @@
             this.message = '注册成功！';
             this.$emit('close');
             setTimeout(() => {
-            alert(this.message)
+            alert(this.message);
             }, 100);
           } else {
             this.message = `${response.data.message}`;

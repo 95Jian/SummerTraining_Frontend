@@ -36,20 +36,26 @@
       };
     },
     methods: {
-      login() {
-        axios.post(`${this.URL}/user/login`, {
-          user_name: this.user_name,
-          password: this.password,
-        }).then(response => {
-          if (response.data.success) {
-            this.message = '登录成功!';
+      async login() {
+        try {
+          const response = await axios.post(`${this.URL}/user/login`, {
+            user_name: this.user_name,
+            password: this.password,
+          });
+          console.log('Full Response:', response);
+          if (response && response.data && response.data.success) {
+            alert('登录成功!');
+            localStorage.setItem('user', JSON.stringify(response.data.user));
+            this.$router.push('/dashboard');
           } else {
-            this.message = `登录失败: ${response.data.message}`;
+            this.message = `登录失败: ${response.data ? response.data.message : '未知错误'}`;
           }
-        }).catch(error => {
-          this.message = `Error: ${error.response.data.message || error.message}`;
-        });
+        } catch (error) {
+          console.error('Login error:', error);
+          this.message = `Error: ${error.response ? (error.response.data.message || error.message) : error.message}`;
+        }
       },
+
       showRegister() {
         this.showRegisterDialog = true;
       },
