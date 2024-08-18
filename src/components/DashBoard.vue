@@ -28,8 +28,8 @@
             <th style="width: 1px;">性别</th>
             <th style="width: 50px;">地址</th>
             <th style="width: 40px;">创建时间</th>
-            <th style="width: 10px;">编辑</th> 
-            <th style="width: 10px;">删除</th> 
+            <th style="width: 1px;">编辑</th> 
+            <th style="width: 1px;">删除</th> 
           </tr>
         </thead>
         <tbody>
@@ -101,8 +101,10 @@ export default {
   },
   computed: {
     avatar() {
+      var avatarUrl=this.user.avatarPath;
+      alert(avatarUrl);
       // 检查用户头像路径，如果为空则使用默认头像
-      return this.user.avatar_path ? this.user.avatar_path : require('@/assets/defaultAvatar.png');
+      return this.user.avatarPath ? require(avatarUrl) : require('@/assets/defaultAvatar.png');
     }
   },
   created() {
