@@ -21,15 +21,15 @@
       <table class="user-table">
         <thead>
           <tr>
-            <th>ID</th>
-            <th>用户名</th>
-            <th>电话</th>
-            <th>邮箱</th>
-            <th>性别</th>
-            <th>地址</th>
-            <th>创建时间</th>
-            <th>编辑</th> 
-            <th>删除</th> 
+            <th style="width: 1px;">ID</th>
+            <th style="width: 50px;">用户名</th>
+            <th style="width: 20px;">电话</th>
+            <th style="width: 50px;">邮箱</th>
+            <th style="width: 1px;">性别</th>
+            <th style="width: 50px;">地址</th>
+            <th style="width: 40px;">创建时间</th>
+            <th style="width: 10px;">编辑</th> 
+            <th style="width: 10px;">删除</th> 
           </tr>
         </thead>
         <tbody>
@@ -72,6 +72,11 @@
           </tr>
         </tbody>
       </table>
+      <div class="pagination">
+        <button @click="previousPage" :disabled="currentPage === 0">上一页</button>
+        <span>第 {{ currentPage + 1 }} 页</span>
+        <button @click="nextPage" :disabled="currentPage >= totalPages - 1">下一页</button>
+      </div>
     </div>
     <register-dialog v-if="showRegisterDialog" @close="showRegisterDialog = false" @user-added="fetchUsers"/>
   </div>
@@ -90,6 +95,8 @@ export default {
       users: [], // 用于存储从数据库中获取的用户数据
       URL:'http://localhost:8080',
       showAddUserDialog: false,
+      totalPages:0,
+      currentPage:0,
     };
   },
   computed: {
@@ -115,12 +122,32 @@ export default {
       console.log(`Navigating to ${section}`);
     },
     fetchUsers() {
-      axios.get(`${this.URL}/user/getAllUsers`).then(response => {
-        this.users = response.data.map(user => ({ ...user, editing: false }));
+      axios.get(`${this.URL}/user/getAllUsers`,{
+        params: {
+          page: this.currentPage,
+          size: 10
+        }
+      }).then(response => {
+        this.users = response.data.users.map(user => ({ ...user, editing: false }));
+        this.totalPages=response.data.totalPages;
+        this.currentPage=response.data.currentPage;
+        console.log(this.users);
       }).catch(error => {
         console.error('Failed to fetch users:', error);
       });
     },
+    previousPage() {
+      if (this.currentPage > 0) {
+        this.currentPage--;
+        this.fetchUsers();
+      }
+    },
+    nextPage() {
+      if (this.currentPage < this.totalPages - 1) {
+        this.currentPage++;
+        this.fetchUsers();
+     }
+   },
     deleteUser(userId) {
       axios.delete(`${this.URL}/user/delete/${userId}`).then(response => {
         if (response.data.success) {
