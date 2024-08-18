@@ -3,7 +3,7 @@
       <div class="login-box">
         <h2>Login</h2>
         <div>
-          <input v-model="user_name" type="text" placeholder="Username" />
+          <input v-model="username" type="text" placeholder="Username" />
         </div>
         <div>
           <input v-model="password" type="password" placeholder="Password" />
@@ -28,7 +28,7 @@
     components: { RegisterDialog },
     data() {
       return {
-        user_name: '',
+        username: '',
         password: '',
         message: '',
         showRegisterDialog: false,
@@ -39,7 +39,7 @@
       async login() {
         try {
           const response = await axios.post(`${this.URL}/user/login`, {
-            user_name: this.user_name,
+            username: this.username,
             password: this.password,
           });
           console.log('Full Response:', response);

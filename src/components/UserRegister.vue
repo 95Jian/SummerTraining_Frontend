@@ -3,10 +3,12 @@
       <div class="register-box">
         <h2>Register</h2>
         <div>
-          <input v-model="user_name" type="text" placeholder="Username" />
-        </div>
-        <div>
+          <input v-model="username" type="text" placeholder="Username" />
           <input v-model="password" type="password" placeholder="Password" />
+          <input v-model="phone" type="text" placeholder="Phone" />
+          <input v-model="email" type="text" placeholder="Email" />
+          <input v-model="gender" type="text" placeholder="Gender" />
+          <input v-model="address" type="text" placeholder="Address" />
         </div>
         <div>
           <button @click="register">Register</button>
@@ -22,9 +24,11 @@
   export default {
     data() {
       return {
-        user_name: '',
+        username: '',
         password: '',
         email: '',
+        phone:'',
+        gender:'',
         message: '',
         URL:'http://localhost:8080',
       };
@@ -32,11 +36,15 @@
     methods: {
       register() {
         axios.post(`${this.URL}/user/register`, {
-          user_name: this.user_name,
+          username: this.username,
           password: this.password,
+          phone:this.phone,
+          email:this.email,
+          gender:this.gender,
         }).then(response => {
           if (response.data.success) {
             this.message = '注册成功！';
+            this.$emit('user-added'); // 发出事件通知父组件
             this.$emit('close');
             setTimeout(() => {
             alert(this.message);
