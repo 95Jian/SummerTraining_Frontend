@@ -6,88 +6,22 @@
         <p>{{ user.username }}</p>
       </div>
       <ul class="nav">
-        <li @click="navigate('user-management')">用户管理</li>
-        <li @click="navigate('role-management')">角色管理</li>
-        <li @click="navigate('permission-management')">权限管理</li>
-        <li @click="navigate('personal-info')">个人信息</li>
+        <li :class="{ active: isActive('/userManagement') }">
+          <router-link to="/dashboard">用户管理</router-link>
+        </li>
+        <li :class="{ active: isActive('/user-profile') }">
+          <router-link to="/dashboard/user-profile">个人信息</router-link>
+        </li>
       </ul>
     </div>
     <div class="content">
-      <div class="actions">
-        <button @click="showRegister" class="actions-button">
-          <img src="@/assets/add.png" alt="Add User" />
-        </button>
-      </div>
-      <table class="user-table">
-        <thead>
-          <tr>
-            <th style="width: 1px;">ID</th>
-            <th style="width: 50px;">用户名</th>
-            <th style="width: 20px;">电话</th>
-            <th style="width: 50px;">邮箱</th>
-            <th style="width: 1px;">性别</th>
-            <th style="width: 50px;">地址</th>
-            <th style="width: 40px;">创建时间</th>
-            <th style="width: 1px;">编辑</th> 
-            <th style="width: 1px;">删除</th> 
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="user in users" :key="user.id">
-            <td>{{ user.id }}</td>
-            <td>
-              <input v-if="user.editing" type="text" v-model="user.username" class="table-input" />
-              <span v-else>{{ user.username }}</span>
-            </td>
-            <td>
-              <input v-if="user.editing" type="text" v-model="user.phone" class="table-input" />
-              <span v-else>{{ user.phone }}</span>
-            </td>
-            <td>
-              <input v-if="user.editing" type="email" v-model="user.email" class="table-input" />
-              <span v-else>{{ user.email }}</span>
-            </td>
-            <td>
-              <input v-if="user.editing" type="text" v-model="user.gender" class="table-input" />
-              <span v-else>{{ user.gender }}</span>
-            </td>
-            <td>
-              <input v-if="user.editing" type="text" v-model="user.address" class="table-input" />
-              <span v-else>{{ user.address }}</span>
-            </td>
-            <td>{{ user.createTime }}</td>
-            <td class="actions-column">
-              <button v-if="user.editing" @click="saveUser(user)" class="actions-button">
-                <img src="@/assets/save.png" alt="Save" />
-              </button>
-              <button v-else @click="editUser(user)" class="actions-button">
-                <img src="@/assets/edit.png" alt="Edit" />
-              </button>
-            </td>
-            <td>
-              <button @click="deleteUser(user.id)" class="actions-button">
-                <img src="@/assets/delete.png" alt="Delete" />
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <div class="pagination">
-        <button @click="previousPage" :disabled="currentPage === 0">上一页</button>
-        <span>第 {{ currentPage + 1 }} 页</span>
-        <button @click="nextPage" :disabled="currentPage >= totalPages - 1">下一页</button>
-      </div>
+      <router-view></router-view>
     </div>
-    <register-dialog v-if="showRegisterDialog" @close="showRegisterDialog = false" @user-added="fetchUsers"/>
   </div>
 </template>
 <script>
 
-import axios from 'axios';
-import RegisterDialog from './UserRegister.vue';
-
 export default {
-  components: { RegisterDialog },
   data() {
     return {
       showRegisterDialog: false,
@@ -102,7 +36,6 @@ export default {
   computed: {
     avatar() {
       var avatarUrl=this.user.avatarPath;
-      alert(avatarUrl);
       // 检查用户头像路径，如果为空则使用默认头像
       return this.user.avatarPath ? require(avatarUrl) : require('@/assets/defaultAvatar.png');
     }
@@ -119,79 +52,9 @@ export default {
     }
   },
   methods: {
-    navigate(section) {
-      // 根据点击的导航项进行页面跳转或内容加载逻辑
-      console.log(`Navigating to ${section}`);
-    },
-    fetchUsers() {
-      axios.get(`${this.URL}/user/getAllUsers`,{
-        params: {
-          page: this.currentPage,
-          size: 10
-        }
-      }).then(response => {
-        this.users = response.data.users.map(user => ({ ...user, editing: false }));
-        this.totalPages=response.data.totalPages;
-        this.currentPage=response.data.currentPage;
-        console.log(this.users);
-      }).catch(error => {
-        console.error('Failed to fetch users:', error);
-      });
-    },
-    previousPage() {
-      if (this.currentPage > 0) {
-        this.currentPage--;
-        this.fetchUsers();
-      }
-    },
-    nextPage() {
-      if (this.currentPage < this.totalPages - 1) {
-        this.currentPage++;
-        this.fetchUsers();
-     }
-   },
-    deleteUser(userId) {
-      axios.delete(`${this.URL}/user/delete/${userId}`).then(response => {
-        if (response.data.success) {
-          this.fetchUsers();
-          alert('删除成功');
-        } else {
-          alert('删除用户失败');
-        }
-      }).catch(error => {
-        console.error('Failed to delete user:', error);
-        alert('删除用户失败');
-      });
-    },
-    showRegister() {
-        this.showRegisterDialog = true;
-    },
-    editUser(user) {
-      this.users.forEach(u => {
-        if (u.id === user.id) {
-          u.editing = true;
-        }
-      });
-      console.log(user);
-    },
-    saveUser(user) {
-      axios.put(`${this.URL}/user/update/${user.id}`, {
-        username: user.username,
-        phone: user.phone,
-        email: user.email,
-        gender: user.gender,
-        address: user.address,
-      }).then(response => {
-        if (response.data.success) {
-          user.editing = false;
-          this.fetchUsers();
-        } else {
-          alert('保存用户信息失败');
-        }
-      }).catch(error => {
-        console.error('Failed to save user:', error);
-        alert('保存用户信息失败');
-      });
+
+    isActive(path) {
+      return this.$route.path === path;
     },
   }
 };
@@ -200,48 +63,26 @@ export default {
 <style>
 .dashboard-container {
   display: flex;
-  height: 97.5vh;
+  height: 95vh;
   overflow: hidden;
 }
 
 .sidebar {
-  width: 250px;
+  width: 20%;
   background-color: #ffffff;
   color: #e50b0b;
-  display: flex;
   flex-direction: column;
   align-items: center;
   padding: 10px;
   box-sizing: border-box;
 }
-.actions {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 20px;
-}
 
-.add-button {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
+.content {
+  width: 100%;
+  background-color: #5ce668;
+  overflow-y: auto;
+  padding: 5px;
 }
-
-.actions-column {
-  display: flex;
-  justify-content: center; /* Center horizontally */
-  align-items: center; /* Center vertically */
-  cursor: pointer;
-}
-
-.actions-button img {
-  width: 30px;
-  height: 30px;
-}
-
-.actions-button:hover {
-  background-color: #f50e0e;
-}
-
 
 .user-info {
   text-align: center;
@@ -251,7 +92,6 @@ export default {
 .avatar {
   width: 100px;
   height: 100px;
-  margin-bottom: 10px;
   border: 2px solid rgb(6, 0, 12);
 }
 
@@ -262,7 +102,6 @@ export default {
   width: 100%;
   height: 10%;
   flex-grow: 1;
-  display: flex;
   flex-direction: column;
 }
 
@@ -278,29 +117,5 @@ export default {
   background-color: #444;
 }
 
-.content {
-  flex-grow: 1;
-  background-color: #5ce668;
-  padding: 20px;
-  overflow-y: auto;
-}
 
-.user-table {
-  width: 100%;
-  border-collapse: collapse;
-  table-layout: fixed; /* Ensure table layout is fixed */
-}
-
-.user-table th,
-.user-table td {
-  border: 1px solid #ddd;
-  padding: 8px;
-  text-align: center;
-  overflow: hidden; /* Hide overflow content */
-}
-
-.table-input {
-  width: 100%;
-  box-sizing: border-box; /* Ensure input fits within the cell */
-}
 </style>
