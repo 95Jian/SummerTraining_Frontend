@@ -117,7 +117,7 @@
       fetchUsers() {
         this.searchQuery="";
         this.searching=false;
-        axios.get(`${this.URL}/user/getAllUsers`,{
+        axios.get(`${this.URL}/user/getAll`,{
           params: {
             page: this.currentPage,
             size: 10
@@ -139,7 +139,7 @@
       searchUsers(current) {
         this.searching=true;
         this.currentPage=current;
-        axios.get(`${this.URL}/user/searchUsers`, {
+        axios.get(`${this.URL}/user/search`, {
           params: {
             username: this.searchQuery,
             page: this.currentPage,
@@ -226,7 +226,9 @@
   </script>
   
   <style>
+  .pagination{
 
+  }
   .content1 {
     flex-grow: 1;
     background-color: #5ce668;

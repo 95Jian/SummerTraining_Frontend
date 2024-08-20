@@ -9,6 +9,9 @@
         <li :class="{ active: isActive('/userManagement') }">
           <router-link to="/dashboard">用户管理</router-link>
         </li>
+        <li :class="{ active: isActive('/roleManagement') }">
+          <router-link to="/dashboard/role-management">角色管理</router-link>
+        </li>
         <li :class="{ active: isActive('/user-profile') }">
           <router-link to="/dashboard/user-profile">个人信息</router-link>
         </li>
