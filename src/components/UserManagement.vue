@@ -65,6 +65,14 @@
                   <img src="@/assets/delete.png" alt="Delete" />
                 </button>
               </td>
+              <td>
+                {{ user.roles.join(', ')  }}
+              </td>
+              <td>
+                <button @click="showAddRoleDialog(user.id)" class="actions-button">
+                  <img src="@/assets/add.png" alt="Add Role" />
+                </button>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -75,6 +83,19 @@
           <span>共 {{ totalPages }} 页</span>
         </div>
       <register-dialog v-if="showRegisterDialog" @close="showRegisterDialog = false" @user-added="fetchUsers"/>
+      <div v-if="showRoleDialog" class="dialog">
+        <div class="dialog-content">
+          <h3>选择角色</h3>
+          <div>
+            <label v-for="role in allRoles" :key="role.id">
+              <input type="checkbox" :value="role.id" v-model="selectedRoles" />
+              {{ role.name }}
+            </label>
+          </div>
+          <button @click="saveRoles">确定</button>
+          <button @click="closeRoleDialog">取消</button>
+        </div>
+      </div>
     </div>
   </template>
   <script>
@@ -87,6 +108,7 @@
     data() {
       return {
         showRegisterDialog: false,
+        showRoleDialog: false,
         user: {},
         users: [], // 用于存储从数据库中获取的用户数据
         URL:'http://localhost:8080',
@@ -95,6 +117,9 @@
         currentPage:0,
         searchQuery: '', // 添加用于存储搜索关键词的变量
         searching:false,
+        editingUserId:0,
+        allRoles: [],
+        selectedRoles:[],
       };
     },
     computed: {
@@ -110,24 +135,48 @@
       if (userData) {
         this.user = JSON.parse(userData);
         this.fetchUsers(); 
+        this.getRoleList();
       } else {
         // 如果没有用户信息，跳转回登录页面
         this.$router.push('/login');
       }
+
+      //获得所有角色名称和id填充allRoles
+
     },
     methods: {
-      fetchUsers() {
+      async getRoleList(){
+        await axios.get(`${this.URL}/role/getAll`).then(response => {
+          this.allRoles = response.data.roles;      
+        }).catch(error => {
+          console.error('Failed to fetch users:', error);
+        });
+      },
+      async fetchUsers() {
         this.searchQuery="";
         this.searching=false;
-        axios.get(`${this.URL}/user/getAll`,{
+        await axios.get(`${this.URL}/user/getAll`,{
           params: {
             page: this.currentPage,
             size: 10
           }
-        }).then(response => {
-          this.users = response.data.users.map(user => ({ ...user, editing: false }));
+        }).then(async response => {
+          this.users = response.data.users.map(user => ({ ...user, editing: false,roles:[] }));
           this.totalPages=response.data.totalPages;
           this.currentPage=response.data.currentPage;
+          for (let user of this.users) {
+            try {
+              const response1 = await  axios.get(`${this.URL}/userRole/getRoleName/${user.id}`);
+              if (response1.data.roles) {
+                user.roles = response1.data.roles;
+              } else {
+                user.roles = ["无"]; // 如果没有权限数据，设置为空数组
+                }
+            } catch (error) {
+              console.error(`Failed to fetch roles for user ${user.id}:`, error);
+              user.roles = ['无']; // 如果获取权限失败，设置为空数组
+            }
+          }
           console.log(this.users);
         }).catch(error => {
           console.error('Failed to fetch users:', error);
@@ -223,6 +272,30 @@
           alert('保存用户信息失败');
         });
       },
+    showAddRoleDialog(userId) {
+      this.editingUserId=userId;
+      this.selectedRoles = []; // 清空之前选择的权限
+      this.showRoleDialog = true;
+    },
+    closeRoleDialog() {
+      this.showRoleDialog = false;
+    },
+    saveRoles() {
+      axios.post(`${this.URL}/userRole/update/${this.editingUserId}`, this.selectedRoles
+      ).then(response => {
+        if (response.data.success) {
+          alert('角色已保存');
+          this.fetchUsers();
+          this.closeRoleDialog();
+          console.log(this.users);
+        } else {
+          alert('保存权限失败1');
+        }
+      }).catch(error => {
+        console.error('Failed to save roles:', error);
+        alert('保存权限失败2');
+      });
+    },
     }
   };
   </script>
@@ -290,5 +363,21 @@
     width: 100%;
     box-sizing: border-box; 
   }
-  </style>
+  .dialog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  }
+.dialog-content {
+  background: white;
+  padding: 20px;
+  border-radius: 5px;
+}
+</style>
   

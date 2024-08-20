@@ -54,6 +54,8 @@
           </tr>
         </tbody>
       </table><!-- 弹出框 -->
+      
+      <role-register-dialog v-if="showRegisterDialog" @close="showRegisterDialog = false" @role-added="fetchRoles"/>
     <div v-if="showPermissionDialog" class="dialog">
       <div class="dialog-content">
         <h3>选择权限</h3>
@@ -72,14 +74,16 @@
 <script>
 
 import axios from 'axios';
+import RoleRegisterDialog from './RoleRegister.vue';
 
 export default {
+  components: { RoleRegisterDialog },
   data() {
     return {
       showPermissionDialog: false,
+      showRegisterDialog:false,
       roles: [], // 用于存储从数据库中获取的用户数据
       URL:'http://localhost:8080',
-      showAddRoleDialog: false,
       editingRoleId:0,
       allPermissions: [
         { id: 1, name: '读取用户' },
@@ -99,7 +103,6 @@ export default {
     async fetchRoles() {
       await axios.get(`${this.URL}/role/getAll`).then(async response => {
         this.roles = response.data.roles.map(role => ({ ...role, editing: false, permissions: []  }));
-        console.log(this.roles);
         // 获取每个角色的权限
         for (let role of this.roles) {
           try {
@@ -115,7 +118,6 @@ export default {
           }
         }
         
-        console.log(this.roles);
       }).catch(error => {
         console.error('Failed to fetch roles:', error);
       });
