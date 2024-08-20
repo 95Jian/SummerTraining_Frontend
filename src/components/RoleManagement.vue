@@ -10,10 +10,12 @@
           <tr>
             <th style="width: 1px;">ID</th>
             <th style="width: 30px;">角色名</th>
-            <th style="width: 300px;">角色简介</th>
+            <th style="width: 30px;">角色简介</th>
             <th style="width: 100px;">创建时间</th>
-            <th style="width: 10px;">编辑</th> 
-            <th style="width: 10px;">删除</th> 
+            <th style="width: 20px;">编辑</th> 
+            <th style="width: 100px;">角色权限</th> 
+            <th style="width: 20px;">修改权限</th> 
+            <th style="width: 20px;">删除</th> 
           </tr>
         </thead>
         <tbody>
@@ -37,29 +39,55 @@
               </button>
             </td>
             <td>
+              {{ role.permissions.join(', ')  }}
+            </td>
+            <td>
+              <button @click="showAddPermissionDialog(role.id)" class="actions-button">
+                <img src="@/assets/add.png" alt="Add Role" />
+              </button>
+            </td>
+            <td>
               <button @click="deleteRole(role.id)" class="actions-button">
                 <img src="@/assets/delete.png" alt="Delete" />
               </button>
             </td>
           </tr>
         </tbody>
-      </table>
-    <register-dialog v-if="showRegisterDialog" @close="showRegisterDialog = false" @role-added="fetchRoles"/>
+      </table><!-- 弹出框 -->
+    <div v-if="showPermissionDialog" class="dialog">
+      <div class="dialog-content">
+        <h3>选择权限</h3>
+        <div>
+          <label v-for="permission in allPermissions" :key="permission.id">
+            <input type="checkbox" :value="permission.id" v-model="selectedPermissions" />
+            {{ permission.name }}
+          </label>
+        </div>
+        <button @click="savePermissions">确定</button>
+        <button @click="closePermissionDialog">取消</button>
+      </div>
+    </div>
   </div>
 </template>
 <script>
 
 import axios from 'axios';
-import RegisterDialog from './RoleRegister.vue';
 
 export default {
-  components: { RegisterDialog },
   data() {
     return {
-      showRegisterDialog: false,
+      showPermissionDialog: false,
       roles: [], // 用于存储从数据库中获取的用户数据
       URL:'http://localhost:8080',
       showAddRoleDialog: false,
+      editingRoleId:0,
+      allPermissions: [
+        { id: 1, name: '读取用户' },
+        { id: 2, name: '修改用户' },
+        { id: 3, name: '读取角色' },
+        { id: 4, name: '修改角色' },
+      ],
+      selectedPermissions:[],
     };
   },
   computed: {
@@ -68,9 +96,25 @@ export default {
       this.fetchRoles(); 
   },
   methods: {
-    fetchRoles() {
-      axios.get(`${this.URL}/role/getAll`).then(response => {
-        this.roles = response.data.roles.map(role => ({ ...role, editing: false }));
+    async fetchRoles() {
+      await axios.get(`${this.URL}/role/getAll`).then(async response => {
+        this.roles = response.data.roles.map(role => ({ ...role, editing: false, permissions: []  }));
+        console.log(this.roles);
+        // 获取每个角色的权限
+        for (let role of this.roles) {
+          try {
+            const permissionsResponse = await  axios.get(`${this.URL}/permission/getPermissionName/${role.id}`);
+            if (permissionsResponse.data.permissions) {
+              role.permissions = permissionsResponse.data.permissions;
+            } else {
+              role.permissions = ["无"]; // 如果没有权限数据，设置为空数组
+            }
+          } catch (error) {
+            console.error(`Failed to fetch permissions for role ${role.id}:`, error);
+            role.permissions = ['无']; // 如果获取权限失败，设置为空数组
+          }
+        }
+        
         console.log(this.roles);
       }).catch(error => {
         console.error('Failed to fetch roles:', error);
@@ -116,6 +160,31 @@ export default {
         alert('保存角色信息失败');
       });
     },
+    showAddPermissionDialog(roleId) {
+      this.editingRoleId=roleId;
+      this.selectedPermissions = []; // 清空之前选择的权限
+      this.showPermissionDialog = true;
+    },
+    closePermissionDialog() {
+      this.showPermissionDialog = false;
+    },
+    savePermissions() {
+      axios.post(`${this.URL}/permission/update/${this.editingRoleId}`, this.selectedPermissions
+      ).then(response => {
+        if (response.data.success) {
+          alert('权限已保存');
+          this.fetchRoles();
+          this.closePermissionDialog();
+          console.log(this.roles);
+        } else {
+          alert('保存权限失败1');
+        }
+      }).catch(error => {
+        console.error('Failed to save permissions:', error);
+        alert('保存权限失败2');
+      });
+    },
+  
   }
 };
 </script>
@@ -174,4 +243,22 @@ export default {
   width: 100%;
   box-sizing: border-box; 
 }
+
+.dialog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.dialog-content {
+  background: white;
+  padding: 20px;
+  border-radius: 5px;
+}
+
 </style>

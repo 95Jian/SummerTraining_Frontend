@@ -16,14 +16,16 @@
           <thead style="height: 20px;">
             <tr>
               <th style="width: 1px;">ID</th>
-              <th style="width: 50px;">用户名</th>
+              <th style="width: 30px;">用户名</th>
               <th style="width: 20px;">电话</th>
               <th style="width: 50px;">邮箱</th>
               <th style="width: 1px;">性别</th>
               <th style="width: 50px;">地址</th>
               <th style="width: 40px;">创建时间</th>
-              <th style="width: 1px;">编辑</th> 
-              <th style="width: 1px;">删除</th> 
+              <th style="width: 5px;">编辑</th> 
+              <th style="width: 5px;">删除</th> 
+              <th style="width: 11px;">用户角色</th> 
+              <th style="width: 11px;">修改角色</th> 
             </tr>
           </thead>
           <tbody>
