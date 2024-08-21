@@ -1,5 +1,5 @@
 <template>
-    <div class="content1">
+    <div v-if="user.role_read" class="content1">
       <div class="actions">
           <button @click="showRegister" class="actions-button">
               <img src="@/assets/add.png" alt="Add Role" />
@@ -10,8 +10,8 @@
           <tr>
             <th style="width: 1px;">ID</th>
             <th style="width: 30px;">角色名</th>
-            <th style="width: 30px;">角色简介</th>
-            <th style="width: 100px;">创建时间</th>
+            <th style="width: 80px;">角色简介</th>
+            <th style="width: 50px;">创建时间</th>
             <th style="width: 20px;">编辑</th> 
             <th style="width: 100px;">角色权限</th> 
             <th style="width: 20px;">修改权限</th> 
@@ -30,7 +30,7 @@
               <span v-else>{{ role.description }}</span>
             </td>
             <td>{{ role.createTime }}</td>
-            <td class="actions-column">
+            <td>
               <button v-if="role.editing" @click="saveRole(role)" class="actions-button">
                 <img src="@/assets/save.png" alt="Save" />
               </button>
@@ -70,6 +70,9 @@
       </div>
     </div>
   </div>
+  <div v-else>
+    无权限
+  </div>
 </template>
 <script>
 
@@ -80,6 +83,7 @@ export default {
   components: { RoleRegisterDialog },
   data() {
     return {
+      user:{},
       showPermissionDialog: false,
       showRegisterDialog:false,
       roles: [], // 用于存储从数据库中获取的用户数据
@@ -97,9 +101,62 @@ export default {
   computed: {
   },
   created() {
-      this.fetchRoles(); 
+    const userData = localStorage.getItem('user');
+      if (userData) {
+        this.user = JSON.parse(userData);
+        this.fetchMyRoles().then(() => {
+          // 在 fetchMyRoles 完成后，调用 fetchUsers 和 getRoleList
+          console.log("User permissions:", this.user.role_read);
+
+          this.$forceUpdate(); // 强制重新渲染组件
+          this.fetchRoles(); 
+        }).catch(error => {
+          console.error('Failed to fetch user roles:', error);
+        });
+
+      } else {
+        // 如果没有用户信息，跳转回登录页面
+        this.$router.push('/login');
+      }
   },
   methods: {
+    async fetchMyRoles(){
+      //获取用户权限
+      const myResponse = await axios.get(`${this.URL}/userRole/getRoleName/${this.user.id}`);
+      if (myResponse.data.role) {
+        this.user.role = myResponse.data.role;
+      } else {
+        this.user.role = "无"; // 如果没有权限数据，设置为空数组
+      }
+      if(this.user.role=="无"){
+        this.user.user_read=false;
+      }else if(this.user.role=="游客"){
+        this.user.user_read=true;
+        this.user.user_write=false;
+        this.user.role_read=false;
+
+      }else if(this.user.role=="管理员"){
+        this.user.user_read=true;
+        this.user.user_write=false;
+        this.user.role_read=true;
+        this.user.role_write=false;
+
+        
+      }else if(this.user.role=="高级管理员"){
+        this.user.user_read=true;
+        this.user.user_write=true;
+        this.user.role_read=true;
+        this.user.role_write=false;
+
+      }else{
+        this.user.user_read=true;
+        this.user.user_write=true;
+        this.user.role_read=true;
+        this.user.role_write=true;
+
+      }
+      console.log(this.user);
+    },
     async fetchRoles() {
       await axios.get(`${this.URL}/role/getAll`).then(async response => {
         this.roles = response.data.roles.map(role => ({ ...role, editing: false, permissions: []  }));
@@ -123,6 +180,10 @@ export default {
       });
     },
     deleteRole(roleId) {
+      if (!this.user.role_write) {
+          alert('您没有权限执行此操作');
+          return; // 退出方法，不执行删除操作
+        }
       axios.delete(`${this.URL}/role/delete/${roleId}`).then(response => {
         if (response.data.success) {
           
@@ -137,9 +198,17 @@ export default {
       });
     },
     showRegister() {
+      if (!this.user.role_write) {
+          alert('您没有权限执行此操作');
+          return; // 退出方法，不执行删除操作
+        }
         this.showRegisterDialog = true;
     },
     editRole(role) {
+      if (!this.user.role_write) {
+          alert('您没有权限执行此操作');
+          return; // 退出方法，不执行删除操作
+        }
       this.roles.forEach(u => {
         if (u.id === role.id) {
           u.editing = true;
@@ -163,6 +232,10 @@ export default {
       });
     },
     showAddPermissionDialog(roleId) {
+      if (!this.user.role_write) {
+          alert('您没有权限执行此操作');
+          return; // 退出方法，不执行删除操作
+        }
       this.editingRoleId=roleId;
       this.selectedPermissions = []; // 清空之前选择的权限
       this.showPermissionDialog = true;

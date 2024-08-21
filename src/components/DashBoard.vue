@@ -3,7 +3,7 @@
     <div class="sidebar">
       <div class="user-info">
         <img :src="avatar" alt="Avatar" class="avatar"/>
-        <p>{{ user.username }}</p>
+        <p>用户名：{{ user.username }}</p>
       </div>
       <ul class="nav">
         <li :class="{ active: isActive('/userManagement') }">
@@ -12,8 +12,8 @@
         <li :class="{ active: isActive('/roleManagement') }">
           <router-link to="/dashboard/role-management">角色管理</router-link>
         </li>
-        <li :class="{ active: isActive('/user-profile') }">
-          <router-link to="/dashboard/user-profile">个人信息</router-link>
+        <li :class="{ active: isActive('/') }">
+          <router-link to="/">退出登录</router-link>
         </li>
       </ul>
     </div>
@@ -39,7 +39,6 @@ export default {
   computed: {
     avatar() {
       var avatarUrl=this.user.avatarPath;
-      // 检查用户头像路径，如果为空则使用默认头像
       return this.user.avatarPath ? require(avatarUrl) : require('@/assets/defaultAvatar.png');
     }
   },
@@ -66,7 +65,7 @@ export default {
 <style>
 .dashboard-container {
   display: flex;
-  height: 95vh;
+  height: 97vh;
   overflow: hidden;
 }
 
@@ -90,12 +89,12 @@ export default {
 .user-info {
   text-align: center;
   margin-bottom: 20px;
+  margin-top: 0px;
 }
 
 .avatar {
   width: 100px;
   height: 100px;
-  border: 2px solid rgb(6, 0, 12);
 }
 
 .nav {
@@ -113,12 +112,16 @@ export default {
   margin-top: 10px;
   text-align: center;
   cursor: pointer;
-  background-color: #5ce668;
+  background-color: #f3c5c5;
 }
 
 .nav li:hover {
-  background-color: #444;
+  background-color: #1752e9;
 }
 
+.nav li.active a {
+  background-color: #007bff; /* 选中时的背景颜色 */
+  color: white; /* 选中时的字体颜色 */
+}
 
 </style>

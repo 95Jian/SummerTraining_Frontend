@@ -1,5 +1,5 @@
 <template>
-      <div class="content1">
+      <div v-if="user.user_read" class="content1">
         <div class="actions">
             <input v-model="searchQuery" type="text" placeholder="搜索用户名" class="search-input" />
             <button @click="searchUsers(0)" class="actions-button">
@@ -24,7 +24,7 @@
               <th style="width: 40px;">创建时间</th>
               <th style="width: 5px;">编辑</th> 
               <th style="width: 5px;">删除</th> 
-              <th style="width: 11px;">用户角色</th> 
+              <th style="width: 16px;">用户角色</th> 
               <th style="width: 11px;">修改角色</th> 
             </tr>
           </thead>
@@ -52,7 +52,7 @@
                 <span v-else>{{ user.address }}</span>
               </td>
               <td>{{ user.createTime }}</td>
-              <td class="actions-column">
+              <td>
                 <button v-if="user.editing" @click="saveUser(user)" class="actions-button">
                   <img src="@/assets/save.png" alt="Save" />
                 </button>
@@ -66,7 +66,7 @@
                 </button>
               </td>
               <td>
-                {{ user.roles.join(', ')  }}
+                  {{ user.role }}
               </td>
               <td>
                 <button @click="showAddRoleDialog(user.id)" class="actions-button">
@@ -88,7 +88,7 @@
           <h3>选择角色</h3>
           <div>
             <label v-for="role in allRoles" :key="role.id">
-              <input type="checkbox" :value="role.id" v-model="selectedRoles" />
+              <input type="radio" :value="role.id" v-model="selectedRole" />
               {{ role.name }}
             </label>
           </div>
@@ -96,6 +96,10 @@
           <button @click="closeRoleDialog">取消</button>
         </div>
       </div>
+    </div>
+    <div v-else>
+      <span>无权限</span>
+      <span>{{ user.user_read }}</span>
     </div>
   </template>
   <script>
@@ -119,7 +123,7 @@
         searching:false,
         editingUserId:0,
         allRoles: [],
-        selectedRoles:[],
+        selectedRole:null,
       };
     },
     computed: {
@@ -134,17 +138,64 @@
       const userData = localStorage.getItem('user');
       if (userData) {
         this.user = JSON.parse(userData);
-        this.fetchUsers(); 
-        this.getRoleList();
+        this.fetchMyRoles().then(() => {
+          // 在 fetchMyRoles 完成后，调用 fetchUsers 和 getRoleList
+          console.log("user.write_read:", this.user.write_read);
+
+          this.$forceUpdate(); // 强制重新渲染组件
+          this.fetchUsers(); 
+          this.getRoleList();
+        }).catch(error => {
+          console.error('Failed to fetch user roles:', error);
+        });
+
       } else {
         // 如果没有用户信息，跳转回登录页面
         this.$router.push('/login');
       }
 
-      //获得所有角色名称和id填充allRoles
+
 
     },
     methods: {
+      async fetchMyRoles(){
+      //获取用户权限
+      const myResponse = await axios.get(`${this.URL}/userRole/getRoleName/${this.user.id}`);
+      if (myResponse.data.role) {
+        this.user.role = myResponse.data.role;
+      } else {
+        this.user.role = "无"; // 如果没有权限数据，设置为空数组
+      }
+      console.log("user role",this.user.role)
+      if(this.user.role=="无"){
+        this.user.user_read=false;
+      }else if(this.user.role=="游客"){
+        this.user.user_read=true;
+        this.user.user_write=false;
+        this.user.role_read=false;
+        this.user.role_write=false;
+
+      }else if(this.user.role=="管理员"){
+        this.user.user_read=true;
+        this.user.user_write=false;
+        this.user.role_read=true;
+        this.user.role_write=false;
+        
+      }else if(this.user.role=="高级管理员"){
+        this.user.user_read=true;
+        this.user.user_write=true;
+        this.user.role_read=true;
+        this.user.role_write=false;
+
+      }else if(this.user.role=="超级管理员"){
+        this.user.user_read=true;
+        this.user.user_write=true;
+        this.user.role_read=true;
+        this.user.role_write=true;
+
+      }
+      console.log(this.user);
+      },
       async getRoleList(){
         await axios.get(`${this.URL}/role/getAll`).then(response => {
           this.allRoles = response.data.roles;      
@@ -161,23 +212,22 @@
             size: 10
           }
         }).then(async response => {
-          this.users = response.data.users.map(user => ({ ...user, editing: false,roles:[] }));
+          this.users = response.data.users.map(user => ({ ...user, editing: false,role:"无" }));
           this.totalPages=response.data.totalPages;
           this.currentPage=response.data.currentPage;
           for (let user of this.users) {
             try {
               const response1 = await  axios.get(`${this.URL}/userRole/getRoleName/${user.id}`);
-              if (response1.data.roles) {
-                user.roles = response1.data.roles;
+              if (response1.data.role) {
+                user.role = response1.data.role;
               } else {
-                user.roles = ["无"]; // 如果没有权限数据，设置为空数组
+                user.roles = "无"; // 如果没有权限数据，设置为空数组
                 }
             } catch (error) {
               console.error(`Failed to fetch roles for user ${user.id}:`, error);
-              user.roles = ['无']; // 如果获取权限失败，设置为空数组
+              user.role = '无'; // 如果获取权限失败，设置为空数组
             }
           }
-          console.log(this.users);
         }).catch(error => {
           console.error('Failed to fetch users:', error);
         });
@@ -225,6 +275,12 @@
        }
      },
       deleteUser(userId) {
+
+        // 检查是否有删除权限
+        if (!this.user.user_write) {
+          alert('您没有权限执行此操作');
+          return; // 退出方法，不执行删除操作
+        }
         axios.delete(`${this.URL}/user/delete/${userId}`).then(response => {
           if (response.data.success) {
             
@@ -243,15 +299,23 @@
         });
       },
       showRegister() {
-          this.showRegisterDialog = true;
+        if (!this.user.user_write) {
+          alert('您没有权限执行此操作');
+          return; // 退出方法，不执行删除操作
+        }
+        this.showRegisterDialog = true;
       },
       editUser(user) {
+                // 检查是否有删除权限
+        if (!this.user.user_write) {
+          alert('您没有权限执行此操作');
+          return; // 退出方法，不执行删除操作
+        }
         this.users.forEach(u => {
           if (u.id === user.id) {
             u.editing = true;
           }
         });
-        console.log(user);
       },
       saveUser(user) {
         axios.put(`${this.URL}/user/update/${user.id}`, {
@@ -273,6 +337,11 @@
         });
       },
     showAddRoleDialog(userId) {
+              // 检查是否有删除权限
+      if (!this.user.user_write) {
+        alert('您没有权限执行此操作');
+        return; // 退出方法，不执行删除操作
+      }
       this.editingUserId=userId;
       this.selectedRoles = []; // 清空之前选择的权限
       this.showRoleDialog = true;
@@ -281,13 +350,16 @@
       this.showRoleDialog = false;
     },
     saveRoles() {
-      axios.post(`${this.URL}/userRole/update/${this.editingUserId}`, this.selectedRoles
-      ).then(response => {
+      axios.post(`${this.URL}/userRole/update/${this.editingUserId}`, this.selectedRole, 
+        {
+        headers: {
+        'Content-Type': 'application/json'
+        }
+      }).then(response => {
         if (response.data.success) {
           alert('角色已保存');
           this.fetchUsers();
           this.closeRoleDialog();
-          console.log(this.users);
         } else {
           alert('保存权限失败1');
         }

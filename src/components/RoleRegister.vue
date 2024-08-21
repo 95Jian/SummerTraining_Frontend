@@ -4,7 +4,7 @@
         <h2>Register</h2>
         <div>
           <input v-model="name" type="text" placeholder="Rolename" />
-          <input v-model="description" type="password" placeholder="Description" />
+          <input v-model="description" type="text" placeholder="Description" />
         </div>
         <div>
           <button @click="register">Register</button>
