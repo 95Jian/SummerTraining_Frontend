@@ -99,7 +99,7 @@
       </div>
     </div>
     <div v-else>
-      <span style="font-size: 100px;">{{ this.wuquanxian }}</span>
+      <span style="font-size: 50px;">{{ this.wuquanxian }}</span>
     </div>
   </template>
   <script>

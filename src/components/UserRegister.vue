@@ -41,6 +41,7 @@
           phone:this.phone,
           email:this.email,
           gender:this.gender,
+          address:this.address,
         }).then(response => {
           if (response.data.success) {
             this.message = '注册成功！';
