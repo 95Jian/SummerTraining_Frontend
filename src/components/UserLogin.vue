@@ -5,13 +5,13 @@
         <div>
           <input v-model="username" type="text" placeholder="Username" />
         </div>
-        <div>
+        <div class="marginTop10">
           <input v-model="password" type="password" placeholder="Password" />
         </div>
-        <div>
+        <div  class="marginTop10">
           <button @click="login">Login</button>
         </div>
-        <div>
+        <div class="marginTop10">
           <a href="#" @click="showRegister">Register</a>
         </div>
         <p v-if="message">{{ message }}</p>
@@ -78,5 +78,10 @@
     border-radius: 5px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   }
+
+  .marginTop10{
+    margin-top: 10px;
+  }
+
   </style>
   

@@ -12,9 +12,9 @@
             <th style="width: 30px;">角色名</th>
             <th style="width: 80px;">角色简介</th>
             <th style="width: 50px;">创建时间</th>
-            <th style="width: 20px;">编辑</th> 
             <th style="width: 100px;">角色权限</th> 
             <th style="width: 20px;">修改权限</th> 
+            <th style="width: 20px;">编辑</th> 
             <th style="width: 20px;">删除</th> 
           </tr>
         </thead>
@@ -30,20 +30,21 @@
               <span v-else>{{ role.description }}</span>
             </td>
             <td>{{ role.createTime }}</td>
-            <td>
-              <button v-if="role.editing" @click="saveRole(role)" class="actions-button">
-                <img src="@/assets/save.png" alt="Save" />
-              </button>
-              <button v-else @click="editRole(role)" class="actions-button">
-                <img src="@/assets/edit.png" alt="Edit" />
-              </button>
-            </td>
+            
             <td>
               {{ role.permissions.join(', ')  }}
             </td>
             <td>
               <button @click="showAddPermissionDialog(role.id)" class="actions-button">
                 <img src="@/assets/add.png" alt="Add Role" />
+              </button>
+            </td>
+            <td>
+              <button v-if="role.editing" @click="saveRole(role)" class="actions-button">
+                <img src="@/assets/save.png" alt="Save" />
+              </button>
+              <button v-else @click="editRole(role)" class="actions-button">
+                <img src="@/assets/edit.png" alt="Edit" />
               </button>
             </td>
             <td>
@@ -65,13 +66,13 @@
             {{ permission.name }}
           </label>
         </div>
-        <button @click="savePermissions">确定</button>
-        <button @click="closePermissionDialog">取消</button>
+        <button style="margin-top: 30px;font-size:15px;" @click="savePermissions">确定</button>
+        <button style="margin-left: 30px;font-size:15px;" @click="closePermissionDialog">取消</button>
       </div>
     </div>
   </div>
   <div v-else>
-    无权限
+    <span style="font-size: 50px;">{{this.wuquanxian}}</span>
   </div>
 </template>
 <script>
@@ -83,6 +84,7 @@ export default {
   components: { RoleRegisterDialog },
   data() {
     return {
+      wuquanxian:"",
       user:{},
       showPermissionDialog: false,
       showRegisterDialog:false,
@@ -107,7 +109,7 @@ export default {
         this.fetchMyRoles().then(() => {
           // 在 fetchMyRoles 完成后，调用 fetchUsers 和 getRoleList
           console.log("User permissions:", this.user.role_read);
-
+          this.wuquanxian="无权限";
           this.$forceUpdate(); // 强制重新渲染组件
           this.fetchRoles(); 
         }).catch(error => {
@@ -267,7 +269,7 @@ export default {
 <style>
 .content1 {
   flex-grow: 1;
-  background-color: #5ce668;
+  background-color: #ffffff;
   overflow-y: auto;
   padding: 5px;
 }

@@ -81,15 +81,20 @@ export default {
 
 .content {
   width: 100%;
-  background-color: #5ce668;
+  background-color: #ffffff;
   overflow-y: auto;
   padding: 5px;
+  height: 93vh;
+  border: 1px solid #000000;
+  border-radius: 1%;
 }
+
 
 .user-info {
   text-align: center;
   margin-bottom: 20px;
   margin-top: 0px;
+  font-size: 20px;
 }
 
 .avatar {
@@ -98,30 +103,35 @@ export default {
 }
 
 .nav {
-  list-style-type: none;
+  list-style: none;
   padding: 0;
-  margin: 0;
-  width: 100%;
-  height: 10%;
-  flex-grow: 1;
-  flex-direction: column;
+  margin-top: 50px;
+  
 }
 
 .nav li {
-  padding: 10px;
-  margin-top: 10px;
-  text-align: center;
-  cursor: pointer;
-  background-color: #f3c5c5;
+  width: 100%;
+  display: inline-block;
+  font-size: 26px; /* 修改这里设置字体大小 */
+  margin-top: 20px;
+  border: 1px solid #000000;
 }
 
-.nav li:hover {
-  background-color: #1752e9;
+.nav li a {
+  text-decoration: none;
+  color: black;
+  display: block;
+  padding: 10px;
 }
 
 .nav li.active a {
-  background-color: #007bff; /* 选中时的背景颜色 */
-  color: white; /* 选中时的字体颜色 */
+  background-color: #9c06fa;
+  color: white;
+}
+
+.nav li a:hover {
+  background-color: #0056b3;
+  color: white;
 }
 
 </style>

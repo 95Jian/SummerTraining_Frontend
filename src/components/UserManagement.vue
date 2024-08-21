@@ -22,10 +22,10 @@
               <th style="width: 1px;">性别</th>
               <th style="width: 50px;">地址</th>
               <th style="width: 40px;">创建时间</th>
-              <th style="width: 5px;">编辑</th> 
-              <th style="width: 5px;">删除</th> 
               <th style="width: 16px;">用户角色</th> 
               <th style="width: 11px;">修改角色</th> 
+              <th style="width: 5px;">编辑</th> 
+              <th style="width: 5px;">删除</th> 
             </tr>
           </thead>
           <tbody>
@@ -53,6 +53,14 @@
               </td>
               <td>{{ user.createTime }}</td>
               <td>
+                  {{ user.role }}
+              </td>
+              <td>
+                <button @click="showAddRoleDialog(user.id)" class="actions-button">
+                  <img src="@/assets/add.png" alt="Add Role" />
+                </button>
+              </td>
+              <td>
                 <button v-if="user.editing" @click="saveUser(user)" class="actions-button">
                   <img src="@/assets/save.png" alt="Save" />
                 </button>
@@ -65,14 +73,7 @@
                   <img src="@/assets/delete.png" alt="Delete" />
                 </button>
               </td>
-              <td>
-                  {{ user.role }}
-              </td>
-              <td>
-                <button @click="showAddRoleDialog(user.id)" class="actions-button">
-                  <img src="@/assets/add.png" alt="Add Role" />
-                </button>
-              </td>
+              
             </tr>
           </tbody>
         </table>
@@ -92,14 +93,13 @@
               {{ role.name }}
             </label>
           </div>
-          <button @click="saveRoles">确定</button>
-          <button @click="closeRoleDialog">取消</button>
+          <button style="margin-top: 30px;font-size:15px;"  @click="saveRoles">确定</button>
+          <button style="margin-left: 10px;font-size: 15px;" @click="closeRoleDialog">取消</button>
         </div>
       </div>
     </div>
     <div v-else>
-      <span>无权限</span>
-      <span>{{ user.user_read }}</span>
+      <span style="font-size: 100px;">{{ this.wuquanxian }}</span>
     </div>
   </template>
   <script>
@@ -111,6 +111,7 @@
     components: { RegisterDialog },
     data() {
       return {
+        wuqianxian:"",
         showRegisterDialog: false,
         showRoleDialog: false,
         user: {},
@@ -141,7 +142,7 @@
         this.fetchMyRoles().then(() => {
           // 在 fetchMyRoles 完成后，调用 fetchUsers 和 getRoleList
           console.log("user.write_read:", this.user.write_read);
-
+          this.wuquanxian="无权限";
           this.$forceUpdate(); // 强制重新渲染组件
           this.fetchUsers(); 
           this.getRoleList();
@@ -373,12 +374,9 @@
   </script>
   
   <style>
-  .pagination{
-
-  }
   .content1 {
     flex-grow: 1;
-    background-color: #5ce668;
+    background-color: #ffffff;
     overflow-y: auto;
     padding: 5px;
   }
@@ -446,6 +444,7 @@
   justify-content: center;
   align-items: center;
   }
+
 .dialog-content {
   background: white;
   padding: 20px;

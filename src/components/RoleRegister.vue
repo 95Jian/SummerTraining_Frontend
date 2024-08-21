@@ -4,13 +4,13 @@
         <h2>Register</h2>
         <div>
           <input v-model="name" type="text" placeholder="Rolename" />
-          <input v-model="description" type="text" placeholder="Description" />
+          <input class="margin10" v-model="description" type="text" placeholder="Description" />
         </div>
-        <div>
+        <div class="margin10">
           <button @click="register">Register</button>
         </div>
-        <p v-if="message">{{ message }}</p>
-        <button @click="$emit('close')">Close</button>
+        <p class="margin10" v-if="message">{{ message }}</p>
+        <button class="margin10" @click="$emit('close')">Close</button>
       </div>
     </div>
   </template>
@@ -79,6 +79,11 @@
     border: 1px solid #ccc;
     border-radius: 5px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+
+
+  .margin10{
+    margin-top: 10px;
   }
   </style>
   

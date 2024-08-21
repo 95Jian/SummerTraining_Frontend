@@ -3,18 +3,18 @@
       <div class="register-box">
         <h2>Register</h2>
         <div>
-          <input v-model="username" type="text" placeholder="Username" />
-          <input v-model="password" type="password" placeholder="Password" />
-          <input v-model="phone" type="text" placeholder="Phone" />
-          <input v-model="email" type="text" placeholder="Email" />
-          <input v-model="gender" type="text" placeholder="Gender" />
-          <input v-model="address" type="text" placeholder="Address" />
+          <input class="register-info" v-model="username" type="text" placeholder="Username" />
+          <input class="register-info" v-model="password" type="password" placeholder="Password" />
+          <input class="register-info" v-model="phone" type="text" placeholder="Phone" />
+          <input class="register-info" v-model="email" type="text" placeholder="Email" />
+          <input class="register-info" v-model="gender" type="text" placeholder="Gender" />
+          <input class="register-info" v-model="address" type="text" placeholder="Address" />
         </div>
-        <div>
+        <div class="register-info">
           <button @click="register">Register</button>
         </div>
         <p v-if="message">{{ message }}</p>
-        <button @click="$emit('close')">Close</button>
+        <button class="register-info" @click="$emit('close')">Close</button>
       </div>
     </div>
   </template>
@@ -89,6 +89,10 @@
     border: 1px solid #ccc;
     border-radius: 5px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .register-info{
+    margin-top: 5px;
   }
   </style>
   
